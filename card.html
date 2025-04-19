@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -622,8 +621,8 @@
                 <div class="photo-preview-placeholder">照片預覽區域</div>
             </div>
             <div class="file-input-container">
-                <label class="file-input-label">選擇照片</label>
-                <input type="file" class="file-input" accept="image/*">
+                <label class="file-input-label" for="file-input">選擇照片</label>
+                <input type="file" class="file-input" id="file-input" accept="image/*">
             </div>
             <div class="form-group">
                 <label class="form-label">照片標題</label>
@@ -659,6 +658,12 @@
             // 檢查是否為檢視模式
             const urlParams = new URLSearchParams(window.location.search);
             const isViewMode = urlParams.get('view') === 'true';
+
+            if (isViewMode) {
+                enableViewMode();
+            } else {
+                addShareButton();
+            }
 
             // DOM 元素選擇
             const card = document.querySelector('.card');
@@ -1488,6 +1493,15 @@
                 };
             }
 
+            // 初始化愛心動畫
+            function initHearts() {
+                for (let i = 0; i < MAX_HEARTS; i++) {
+                    setTimeout(() => {
+                        createHeart();
+                    }, i * 1000);
+                }
+            }
+
             // 啟用檢視模式
             function enableViewMode() {
                 // 隱藏所有編輯相關 UI
@@ -1498,7 +1512,7 @@
                     modal.remove();
                 });
 
-                // 移除可編輯屬性並禁用交互
+                // 移除可編輯屬性並禁用交互（但保留打開/返回按鈕）
                 document.querySelectorAll('[data-editable="true"]').forEach(el => {
                     el.removeAttribute('data-editable');
                     el.removeAttribute('tabindex');
@@ -1522,12 +1536,16 @@
                         pointer-events: none;
                         user-select: none;
                     }
+                    .open-button, .close-button {
+                        pointer-events: auto !important;
+                        user-select: auto !important;
+                        cursor: pointer !important;
+                    }
                 `;
                 document.head.appendChild(style);
 
-                // 克隆 DOM 移除事件監聽器
-                const clonedCard = card.cloneNode(true);
-                card.parentNode.replaceChild(clonedCard, card);
+                // 只移除內容區互動，保留打開/返回按鈕事件
+                // 不再克隆 card 以保留按鈕事件
             }
 
             // 添加分享按鈕
@@ -1557,109 +1575,109 @@
 
                 shareButton.addEventListener('click', () => {
                     saveCardData();
-                    const viewUrl = `${window.location.href}${window.location.href.includes('?') ? '&' : '?'}view=true`;
+                    const viewUrl = `${window.location.origin}${window.location.pathname}${window.location.search.includes('view=true') ? window.location.search : (window.location.search ? window.location.search + '&view=true' : '?view=true')}`;
                     showShareDialog(viewUrl);
                 });
 
                 document.body.appendChild(shareButton);
-        }
-    }, 1000); // 延遲 1 秒確保其他元素已加載
-});
+            }
 
-        // 顯示分享對話框
-function showShareDialog(viewUrl) {
-    // 創建對話框
-    const dialogOverlay = document.createElement('div');
-    dialogOverlay.className = 'share-dialog-overlay';
-    dialogOverlay.style.position = 'fixed';
-    dialogOverlay.style.top = '0';
-    dialogOverlay.style.left = '0';
-    dialogOverlay.style.width = '100%';
-    dialogOverlay.style.height = '100%';
-    dialogOverlay.style.background = 'rgba(0,0,0,0.7)';
-    dialogOverlay.style.display = 'flex';
-    dialogOverlay.style.justifyContent = 'center';
-    dialogOverlay.style.alignItems = 'center';
-    dialogOverlay.style.zIndex = '2000';
-    
-    const dialog = document.createElement('div');
-    dialog.className = 'share-dialog';
-    dialog.style.width = '90%';
-    dialog.style.maxWidth = '500px';
-    dialog.style.background = 'white';
-    dialog.style.borderRadius = '10px';
-    dialog.style.padding = '20px';
-    dialog.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-    
-    dialog.innerHTML = `
-        <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem; text-align: center;">分享你的生日賀卡</h3>
-        <p style="margin-bottom: 15px;">複製以下鏈接或生成 QR 碼來分享你的賀卡：</p>
-        <div style="display: flex; margin-bottom: 20px;">
-            <input type="text" id="share-url" value="${viewUrl}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            <button id="copy-url-btn" style="margin-left: 10px; padding: 10px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">複製</button>
-        </div>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <button id="generate-qr-btn" style="padding: 10px 20px; background: #5e35b1; color: white; border: none; border-radius: 5px; cursor: pointer;">生成 QR 碼</button>
-        </div>
-        <div id="qrcode-container" style="text-align: center; margin: 20px 0; display: none;"></div>
-        <div style="text-align: center;">
-            <button id="close-dialog-btn" style="padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">關閉</button>
-        </div>
-    `;
-    
-    dialogOverlay.appendChild(dialog);
-    document.body.appendChild(dialogOverlay);
-    
-    // 複製 URL 按鈕
-    document.getElementById('copy-url-btn').addEventListener('click', function() {
-        const urlInput = document.getElementById('share-url');
-        urlInput.select();
-        document.execCommand('copy');
-        
-        this.textContent = '已複製!';
-        setTimeout(() => {
-            this.textContent = '複製';
-        }, 2000);
-    });
-    
-    // 生成 QR 碼按鈕
-    document.getElementById('generate-qr-btn').addEventListener('click', function() {
-        const qrcodeContainer = document.getElementById('qrcode-container');
-        qrcodeContainer.style.display = 'block';
-        
-        // 使用 Google Chart API 生成 QR 碼
-        const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${encodeURIComponent(viewUrl)}&chs=250x250&choe=UTF-8`;
-        qrcodeContainer.innerHTML = `
-            <img src="${qrCodeUrl}" alt="QR Code">
-            <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">用手機掃描此 QR 碼即可查看</p>
-            <button id="download-qr-btn" style="margin-top: 10px; padding: 8px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">下載 QR 碼</button>
-        `;
-        
-        // 下載 QR 碼按鈕
-        document.getElementById('download-qr-btn').addEventListener('click', function() {
-            const link = document.createElement('a');
-            link.href = qrCodeUrl;
-            link.download = '生日賀卡_QR碼.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // 顯示分享對話框
+            function showShareDialog(viewUrl) {
+                // 創建對話框
+                const dialogOverlay = document.createElement('div');
+                dialogOverlay.className = 'share-dialog-overlay';
+                dialogOverlay.style.position = 'fixed';
+                dialogOverlay.style.top = '0';
+                dialogOverlay.style.left = '0';
+                dialogOverlay.style.width = '100%';
+                dialogOverlay.style.height = '100%';
+                dialogOverlay.style.background = 'rgba(0,0,0,0.7)';
+                dialogOverlay.style.display = 'flex';
+                dialogOverlay.style.justifyContent = 'center';
+                dialogOverlay.style.alignItems = 'center';
+                dialogOverlay.style.zIndex = '2000';
+                
+                const dialog = document.createElement('div');
+                dialog.className = 'share-dialog';
+                dialog.style.width = '90%';
+                dialog.style.maxWidth = '500px';
+                dialog.style.background = 'white';
+                dialog.style.borderRadius = '10px';
+                dialog.style.padding = '20px';
+                dialog.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+                
+                dialog.innerHTML = `
+                    <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem; text-align: center;">分享你的生日賀卡</h3>
+                    <p style="margin-bottom: 15px;">複製以下鏈接或生成 QR 碼來分享你的賀卡：</p>
+                    <div style="display: flex; margin-bottom: 20px;">
+                        <input type="text" id="share-url" value="${viewUrl}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button id="copy-url-btn" style="margin-left: 10px; padding: 10px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">複製</button>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button id="generate-qr-btn" style="padding: 10px 20px; background: #5e35b1; color: white; border: none; border-radius: 5px; cursor: pointer;">生成 QR 碼</button>
+                    </div>
+                    <div id="qrcode-container" style="text-align: center; margin: 20px 0; display: none;"></div>
+                    <div style="text-align: center;">
+                        <button id="close-dialog-btn" style="padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">關閉</button>
+                    </div>
+                `;
+                
+                dialogOverlay.appendChild(dialog);
+                document.body.appendChild(dialogOverlay);
+                
+                // 複製 URL 按鈕
+                document.getElementById('copy-url-btn').addEventListener('click', function() {
+                    const urlInput = document.getElementById('share-url');
+                    urlInput.select();
+                    document.execCommand('copy');
+                    
+                    this.textContent = '已複製!';
+                    setTimeout(() => {
+                        this.textContent = '複製';
+                    }, 2000);
+                });
+                
+                // 生成 QR 碼按鈕
+                document.getElementById('generate-qr-btn').addEventListener('click', function() {
+                    const qrcodeContainer = document.getElementById('qrcode-container');
+                    qrcodeContainer.style.display = 'block';
+                    
+                    // 使用 Google Chart API 生成 QR 碼
+                    const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${encodeURIComponent(viewUrl)}&chs=250x250&choe=UTF-8`;
+                    qrcodeContainer.innerHTML = `
+                        <img src="${qrCodeUrl}" alt="QR Code">
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">用手機掃描此 QR 碼即可查看</p>
+                        <button id="download-qr-btn" style="margin-top: 10px; padding: 8px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">下載 QR 碼</button>
+                    `;
+                    
+                    // 下載 QR 碼按鈕
+                    document.getElementById('download-qr-btn').addEventListener('click', function() {
+                        const link = document.createElement('a');
+                        link.href = qrCodeUrl;
+                        link.download = '生日賀卡_QR碼.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+                });
+                
+                // 關閉對話框按鈕
+                document.getElementById('close-dialog-btn').addEventListener('click', function() {
+                    document.body.removeChild(dialogOverlay);
+                });
+                
+                // 點擊背景關閉對話框
+                dialogOverlay.addEventListener('click', function(e) {
+                    if (e.target === dialogOverlay) {
+                        document.body.removeChild(dialogOverlay);
+                    }
+                });
+            }
+
+            // 在 DOMContentLoaded 結尾呼叫
+            initHearts();
         });
-    });
-    
-    // 關閉對話框按鈕
-    document.getElementById('close-dialog-btn').addEventListener('click', function() {
-        document.body.removeChild(dialogOverlay);
-    });
-    
-    // 點擊背景關閉對話框
-    dialogOverlay.addEventListener('click', function(e) {
-        if (e.target === dialogOverlay) {
-            document.body.removeChild(dialogOverlay);
-        }
-    });
-}
-
-        
-</script>
+    </script>
 </body>
 </html>
