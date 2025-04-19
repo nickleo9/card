@@ -175,12 +175,14 @@
             position: relative;
             overflow: hidden;
             border-radius: 10px;
+            aspect-ratio: 16/9;
         }
         .photo-frame img.photo-real {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
+            height: 100%;
+            object-fit: contain;
             display: block;
+            background: #f5f5f5;
         }
         .photo-placeholder {
             width: 100%;
@@ -268,7 +270,7 @@
         .gallery-dot.active {
             background: #7e57c2;
         }
-        .photo-upload-modal, .edit-modal {
+        .photo-upload-modal, .edit-modal, .music-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -280,7 +282,7 @@
             align-items: center;
             z-index: 1000;
         }
-        .photo-upload-modal.active, .edit-modal.active {
+        .photo-upload-modal.active, .edit-modal.active, .music-modal.active {
             display: flex;
         }
         .modal-content, .edit-modal-content {
@@ -298,8 +300,8 @@
             text-align: center;
         }
         .photo-preview {
-            width: 100 lai;
-            height: 200px;
+            width: 100%;
+            aspect-ratio: 16/9;
             border: 1px solid #ddd;
             border-radius: 5px;
             margin-bottom: 20px;
@@ -307,11 +309,12 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            background: #f5f5f5;
         }
         .photo-preview img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         .photo-preview-placeholder {
             color: #999;
@@ -360,11 +363,11 @@
             cursor: pointer;
             font-size: 1rem;
         }
-        .cancel-button, .cancel-edit-button {
+        .cancel-button, .cancel-edit-button, .cancel-music-button {
             background: #f5f5f5;
             color: #333;
         }
-        .save-button, .save-edit-button {
+        .save-button, .save-edit-button, .save-music-button {
             background: #7e57c2;
             color: white;
         }
@@ -429,6 +432,107 @@
         }
         .save-status.visible {
             opacity: 1;
+        }
+        /* 新增分享對話框樣式 */
+        .share-dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .share-dialog {
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .share-button {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #7e57c2;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #share-url {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .share-dialog button {
+            padding: 8px 15px;
+            background: #7e57c2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .share-dialog button.close-dialog {
+            background: #f5f5f5;
+            color: #333;
+        }
+        #qrcode-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        #qrcode-container img {
+            max-width: 250px;
+            height: auto;
+        }
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(126, 87, 194, 0.8);
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .music-control button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .music-control svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+        .music-control .music-title {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
     </style>
 </head>
@@ -652,20 +756,47 @@
             </div>
         </div>
     </div>
-
+    <div class="music-modal">
+        <div class="modal-content">
+            <div class="modal-title">選擇背景音樂</div>
+            <div class="form-group">
+                <label class="form-label">選擇音樂文件</label>
+                <div class="file-input-container">
+                    <label class="file-input-label" for="music-input">選擇音樂</label>
+                    <input type="file" class="file-input" id="music-input" accept="audio/*">
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="form-button cancel-music-button">取消</button>
+                <button class="form-button save-music-button">保存</button>
+            </div>
+        </div>
+    </div>
+    <div class="music-control">
+        <button id="toggleMusic">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+        </button>
+        <p class="music-title">背景音樂</p>
+    </div>
+    <audio id="bgMusic" loop>
+        <source src="uploads/background.mp3" type="audio/mp3">
+    </audio>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 檢查是否為檢視模式
-            const urlParams = new URLSearchParams(window.location.search);
-            const isViewMode = urlParams.get('view') === 'true';
+            // 先宣告全域變數
+            let currentSlide = 0;
+            let totalSlides = document.querySelectorAll('.photo-frame').length;
+            let selectedPhotoId = null;
+            let currentEditElement = null;
+            let sortMode = false;
+            let selectedFile = null;
+            let MAX_HEARTS = 15; // 預設愛心數量
+            let activeHearts = 0;
+            let heartPool = [];
 
-            if (isViewMode) {
-                enableViewMode();
-            } else {
-                addShareButton();
-            }
-
-            // DOM 元素選擇
+            // 選取重要的 DOM 元素
             const card = document.querySelector('.card');
             const openButton = document.querySelector('.open-button');
             const closeButton = document.querySelector('.close-button');
@@ -690,17 +821,268 @@
             const editTextarea = document.querySelector('.edit-textarea');
             const cancelEditButton = document.querySelector('.cancel-edit-button');
             const saveEditButton = document.querySelector('.save-edit-button');
+            const toggleMusicButton = document.getElementById('toggleMusic');
+            const bgMusic = document.getElementById('bgMusic');
+            const musicModal = document.querySelector('.music-modal');
+            const musicInput = document.getElementById('music-input');
+            const cancelMusicButton = document.querySelector('.cancel-music-button');
+            const saveMusicButton = document.querySelector('.save-music-button');
 
-            // 狀態變數
-            let currentSlide = 0;
-            let totalSlides = document.querySelectorAll('.photo-frame').length;
-            let selectedPhotoId = null;
-            let currentEditElement = null;
-            let sortMode = false;
-            let selectedFile = null;
-            const MAX_HEARTS = 15;
-            let activeHearts = 0;
-            let heartPool = [];
+            // 檢查是否為檢視模式和是否有分享資料
+            const urlParams = new URLSearchParams(window.location.search);
+            const isViewMode = urlParams.get('view') === 'true';
+            const cardId = urlParams.get('card');
+            const sharedData = urlParams.get('data');
+
+            // 如果有分享資料，先嘗試載入
+            if (sharedData) {
+                try {
+                    // 解碼分享資料時需要先用 atob 解碼 base64，再解碼 UTF-8
+                    const decoded = atob(sharedData);
+                    const decodedStr = decodeURIComponent(escape(decoded));
+                    const decodedData = JSON.parse(decodedStr);
+                    localStorage.setItem('birthdayCardData', JSON.stringify(decodedData));
+                } catch (e) {
+                    console.error('無法載入分享資料:', e);
+                }
+            }
+
+            // 如果是檢視模式，增加愛心數量並啟用檢視模式
+            if (isViewMode && cardId) {
+                loadCardFromServer(cardId).then(cardData => {
+                    if (cardData) {
+                        localStorage.setItem('birthdayCardData', JSON.stringify(cardData));
+                        loadCardData();
+                        enableViewMode();
+                    }
+                });
+            } else if (isViewMode) {
+                MAX_HEARTS = 30;
+                enableViewMode();
+            } else {
+                const shareButton = document.createElement('button');
+                shareButton.className = 'share-button';
+                shareButton.innerHTML = `
+                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 5px; fill: white;">
+                        <path d="M18,16.08c-0.76,0-1.44,0.3-1.96,0.77L8.91,12.7c0.05-0.23,0.09-0.46,0.09-0.7s-0.04-0.47-0.09-0.7l7.05-4.11C16.5,7.69,17.21,8,18,8c1.66,0,3-1.34,3-3c0-1.66-1.34-3-3-3s-3,1.34-3,3c0,0.24,0.04,0.47,0.09,0.7L8.04,9.81C7.5,9.31,6.79,9,6,9c-1.66,0-3,1.34-3,3c0,1.66,1.34,3,3,3c0.79,0,1.5-0.31,2.04-0.81l7.12,4.16c-0.05,0.21-0.08,0.43-0.08,0.65c0,1.61,1.31,2.92,2.92,2.92s2.92-1.31,2.92-2.92C20.92,17.39,19.61,16.08,18,16.08z"/>
+                    </svg>
+                    分享賀卡
+                `;
+                document.body.appendChild(shareButton);
+
+                shareButton.onclick = async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // 建立對話框
+                    const dialogOverlay = document.createElement('div');
+                    dialogOverlay.className = 'share-dialog-overlay';
+                    dialogOverlay.style.zIndex = '99999';
+                    
+                    const dialog = document.createElement('div');
+                    dialog.className = 'share-dialog';
+                    dialog.style.position = 'relative';
+                    dialog.style.zIndex = '100000';
+                    
+                    dialog.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem;">分享你的生日賀卡</h3>
+                            <p style="margin-bottom: 15px;">正在準備分享連結，請稍候...</p>
+                        </div>
+                    `;
+                    
+                    dialogOverlay.appendChild(dialog);
+                    document.body.appendChild(dialogOverlay);
+                    
+                    try {
+                        // 先保存本地數據
+                        saveCardData();
+                        
+                        // 準備要發送的數據
+                        const cardData = {
+                            title: document.querySelector('[data-type="title"]')?.innerHTML || "",
+                            subtitle: document.querySelector('[data-type="subtitle"]')?.innerHTML || "",
+                            backTitle: document.querySelector('[data-type="back-title"]')?.innerHTML || "",
+                            message: document.querySelector('[data-type="message"]')?.innerHTML || "",
+                            travelTitle: document.querySelector('[data-type="travel-title"]')?.innerHTML || "",
+                            travelContent: document.querySelector('[data-type="travel-content"]')?.innerHTML || "",
+                            movieTitle: document.querySelector('[data-type="movie-title"]')?.innerHTML || "",
+                            movieContent: document.querySelector('[data-type="movie-content"]')?.innerHTML || "",
+                            foodTitle: document.querySelector('[data-type="food-title"]')?.innerHTML || "",
+                            foodContent: document.querySelector('[data-type="food-content"]')?.innerHTML || "",
+                            exhibitionTitle: document.querySelector('[data-type="exhibition-title"]')?.innerHTML || "",
+                            exhibitionContent: document.querySelector('[data-type="exhibition-content"]')?.innerHTML || "",
+                            photos: []
+                        };
+
+                        // 收集照片數據
+                        document.querySelectorAll('.photo-frame').forEach(frame => {
+                            const photoData = {
+                                id: frame.getAttribute('data-id')
+                            };
+                            const realPhoto = frame.querySelector('.photo-real');
+                            const placeholderPhoto = frame.querySelector('.photo-placeholder');
+                            const photoCaption = frame.querySelector('.photo-caption');
+
+                            if (realPhoto) {
+                                photoData.type = 'real';
+                                photoData.src = realPhoto.src;
+                            } else if (placeholderPhoto) {
+                                photoData.type = 'placeholder';
+                                photoData.title = placeholderPhoto.querySelector('p')?.textContent || "";
+                                photoData.background = placeholderPhoto.style.background || "";
+                            }
+                            if (photoCaption) {
+                                photoData.caption = photoCaption.innerHTML;
+                            }
+                            cardData.photos.push(photoData);
+                        });
+
+                        // 發送到服務器
+                        const response = await fetch('http://localhost:5000/api/save_card', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(cardData)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('網路請求失敗');
+                        }
+
+                        const result = await response.json();
+                        if (!result.success) {
+                            throw new Error(result.message || '保存失敗');
+                        }
+
+                        // 構建完整的分享 URL
+                        const baseUrl = 'http://localhost:5000/card.html';
+                        const shareUrl = `${baseUrl}?view=true&card=${result.card_id}`;
+                        
+                        // 更新對話框內容
+                        dialog.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem;">分享你的生日賀卡</h3>
+                                <div style="margin-bottom: 20px;">
+                                    <input type="text" id="share-url" value="${shareUrl}" 
+                                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;" readonly>
+                                    <button id="copy-url-btn" 
+                                        style="width: 100%; padding: 10px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                        複製連結
+                                    </button>
+                                </div>
+                                <button id="close-dialog-btn" 
+                                    style="width: 100%; padding: 10px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">
+                                    關閉
+                                </button>
+                            </div>
+                        `;
+                        
+                        // 複製連結功能
+                        const copyBtn = document.getElementById('copy-url-btn');
+                        const urlInput = document.getElementById('share-url');
+                        
+                        copyBtn.onclick = async function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            try {
+                                await navigator.clipboard.writeText(shareUrl);
+                                this.textContent = '已複製!';
+                                setTimeout(() => this.textContent = '複製連結', 2000);
+                            } catch (err) {
+                                urlInput.select();
+                                document.execCommand('copy');
+                                this.textContent = '已複製!';
+                                setTimeout(() => this.textContent = '複製連結', 2000);
+                            }
+                        };
+                        
+                        // 關閉按鈕
+                        document.getElementById('close-dialog-btn').onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            document.body.removeChild(dialogOverlay);
+                        };
+                        
+                    } catch (error) {
+                        console.error('分享失敗:', error);
+                        dialog.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem;">分享失敗</h3>
+                                <p style="margin-bottom: 20px; color: #f44336;">請稍後重試！</p>
+                                <button id="error-close-btn" 
+                                    style="width: 100%; padding: 10px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">
+                                    關閉
+                                </button>
+                            </div>
+                        `;
+                        
+                        document.getElementById('error-close-btn').onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            document.body.removeChild(dialogOverlay);
+                        };
+                    }
+                    
+                    return false;
+                };
+            }
+
+            // 無論是否為檢視模式，都啟用愛心動畫
+            setInterval(() => {
+                if (activeHearts < MAX_HEARTS) {
+                    createHeart();
+                }
+            }, 1000);
+
+            // 初始化愛心動畫
+            initHearts();
+
+            // 翻轉卡片事件監聽器
+            if (openButton) {
+                openButton.addEventListener('click', () => {
+                    card.classList.add('flipped');
+                    createConfetti();
+                });
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    card.classList.remove('flipped');
+                });
+            }
+
+            // 音樂控制器事件
+            toggleMusicButton.addEventListener('click', () => {
+                if (bgMusic.paused) {
+                    bgMusic.play();
+                } else {
+                    bgMusic.pause();
+                }
+            });
+
+            // 音樂選擇功能
+            toggleMusicButton.addEventListener('dblclick', () => {
+                musicModal.classList.add('active');
+            });
+
+            cancelMusicButton.addEventListener('click', () => {
+                musicModal.classList.remove('active');
+            });
+
+            saveMusicButton.addEventListener('click', () => {
+                const file = musicInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        bgMusic.src = event.target.result;
+                        bgMusic.play();
+                    };
+                    reader.readAsDataURL(file);
+                }
+                musicModal.classList.remove('active');
+            });
 
             // 防抖函數：限制保存頻率
             function debounce(func, wait) {
@@ -929,16 +1311,6 @@
                 goToSlide(currentSlide - 1);
             }
 
-            // 翻轉卡片
-            openButton.addEventListener('click', () => {
-                card.classList.add('flipped');
-                createConfetti();
-            });
-
-            closeButton.addEventListener('click', () => {
-                card.classList.remove('flipped');
-            });
-
             // 記憶圖標點擊事件
             memoryIcons.forEach(icon => {
                 icon.addEventListener('click', function() {
@@ -955,8 +1327,8 @@
             });
 
             // 照片導航按鈕
-            nextButton.addEventListener('click', nextSlide);
-            prevButton.addEventListener('click', prevSlide);
+            nextButton?.addEventListener('click', nextSlide);
+            prevButton?.addEventListener('click', prevSlide);
 
             // 添加照片事件監聽器
             function addPhotoEventListeners(photoFrame) {
@@ -1508,7 +1880,7 @@
                 document.querySelectorAll('.edit-photo-btn, .delete-photo-btn, .add-photo-button, .photo-sort-button, .photo-actions').forEach(el => {
                     el.remove();
                 });
-                document.querySelectorAll('.photo-upload-modal, .edit-modal').forEach(modal => {
+                document.querySelectorAll('.photo-upload-modal, .edit-modal, .music-modal').forEach(modal => {
                     modal.remove();
                 });
 
@@ -1544,139 +1916,187 @@
                 `;
                 document.head.appendChild(style);
 
-                // 只移除內容區互動，保留打開/返回按鈕事件
-                // 不再克隆 card 以保留按鈕事件
-            }
-
-            // 添加分享按鈕
-            function addShareButton() {
-                if (isViewMode) return;
-                const shareButton = document.createElement('button');
-                shareButton.className = 'share-button';
-                shareButton.innerHTML = `
-                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 5px; fill: white;">
-                        <path d="M18,16.08c-0.76,0-1.44,0.3-1.96,0.77L8.91,12.7c0.05-0.23,0.09-0.46,0.09-0.7s-0.04-0.47-0.09-0.7l7.05-4.11C16.5,7.69,17.21,8,18,8c1.66,0,3-1.34,3-3c0-1.66-1.34-3-3-3s-3,1.34-3,3c0,0.24,0.04,0.47,0.09,0.7L8.04,9.81C7.5,9.31,6.79,9,6,9c-1.66,0-3,1.34-3,3c0,1.66,1.34,3,3,3c0.79,0,1.5-0.31,2.04-0.81l7.12,4.16c-0.05,0.21-0.08,0.43-0.08,0.65c0,1.61,1.31,2.92,2.92,2.92s2.92-1.31,2.92-2.92C20.92,17.39,19.61,16.08,18,16.08z"/>
-                    </svg>
-                    分享賀卡
-                `;
-                shareButton.style.position = 'fixed';
-                shareButton.style.bottom = '70px';
-                shareButton.style.right = '20px';
-                shareButton.style.padding = '10px 20px';
-                shareButton.style.background = '#7e57c2';
-                shareButton.style.color = 'white';
-                shareButton.style.border = 'none';
-                shareButton.style.borderRadius = '30px';
-                shareButton.style.cursor = 'pointer';
-                shareButton.style.zIndex = '1000';
-                shareButton.style.display = 'flex';
-                shareButton.style.alignItems = 'center';
-                shareButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-
-                shareButton.addEventListener('click', () => {
-                    saveCardData();
-                    const viewUrl = `${window.location.origin}${window.location.pathname}${window.location.search.includes('view=true') ? window.location.search : (window.location.search ? window.location.search + '&view=true' : '?view=true')}`;
-                    showShareDialog(viewUrl);
-                });
-
-                document.body.appendChild(shareButton);
+                // 讓分享模式下愛心更多
+                MAX_HEARTS = 30;
+                initHearts();
             }
 
             // 顯示分享對話框
-            function showShareDialog(viewUrl) {
-                // 創建對話框
-                const dialogOverlay = document.createElement('div');
-                dialogOverlay.className = 'share-dialog-overlay';
-                dialogOverlay.style.position = 'fixed';
-                dialogOverlay.style.top = '0';
-                dialogOverlay.style.left = '0';
-                dialogOverlay.style.width = '100%';
-                dialogOverlay.style.height = '100%';
-                dialogOverlay.style.background = 'rgba(0,0,0,0.7)';
-                dialogOverlay.style.display = 'flex';
-                dialogOverlay.style.justifyContent = 'center';
-                dialogOverlay.style.alignItems = 'center';
-                dialogOverlay.style.zIndex = '2000';
-                
-                const dialog = document.createElement('div');
-                dialog.className = 'share-dialog';
-                dialog.style.width = '90%';
-                dialog.style.maxWidth = '500px';
-                dialog.style.background = 'white';
-                dialog.style.borderRadius = '10px';
-                dialog.style.padding = '20px';
-                dialog.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-                
-                dialog.innerHTML = `
-                    <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem; text-align: center;">分享你的生日賀卡</h3>
-                    <p style="margin-bottom: 15px;">複製以下鏈接或生成 QR 碼來分享你的賀卡：</p>
-                    <div style="display: flex; margin-bottom: 20px;">
-                        <input type="text" id="share-url" value="${viewUrl}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        <button id="copy-url-btn" style="margin-left: 10px; padding: 10px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">複製</button>
-                    </div>
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <button id="generate-qr-btn" style="padding: 10px 20px; background: #5e35b1; color: white; border: none; border-radius: 5px; cursor: pointer;">生成 QR 碼</button>
-                    </div>
-                    <div id="qrcode-container" style="text-align: center; margin: 20px 0; display: none;"></div>
-                    <div style="text-align: center;">
-                        <button id="close-dialog-btn" style="padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">關閉</button>
-                    </div>
-                `;
-                
-                dialogOverlay.appendChild(dialog);
-                document.body.appendChild(dialogOverlay);
-                
-                // 複製 URL 按鈕
-                document.getElementById('copy-url-btn').addEventListener('click', function() {
-                    const urlInput = document.getElementById('share-url');
-                    urlInput.select();
-                    document.execCommand('copy');
+            async function showShareDialog(viewUrl) {
+                try {
+                    const dialogOverlay = document.createElement('div');
+                    dialogOverlay.className = 'share-dialog-overlay';
+
+                    const dialog = document.createElement('div');
+                    dialog.className = 'share-dialog';
                     
-                    this.textContent = '已複製!';
-                    setTimeout(() => {
-                        this.textContent = '複製';
-                    }, 2000);
-                });
-                
-                // 生成 QR 碼按鈕
-                document.getElementById('generate-qr-btn').addEventListener('click', function() {
-                    const qrcodeContainer = document.getElementById('qrcode-container');
-                    qrcodeContainer.style.display = 'block';
-                    
-                    // 使用 Google Chart API 生成 QR 碼
-                    const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${encodeURIComponent(viewUrl)}&chs=250x250&choe=UTF-8`;
-                    qrcodeContainer.innerHTML = `
-                        <img src="${qrCodeUrl}" alt="QR Code">
-                        <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">用手機掃描此 QR 碼即可查看</p>
-                        <button id="download-qr-btn" style="margin-top: 10px; padding: 8px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">下載 QR 碼</button>
-                    `;
-                    
-                    // 下載 QR 碼按鈕
-                    document.getElementById('download-qr-btn').addEventListener('click', function() {
-                        const link = document.createElement('a');
-                        link.href = qrCodeUrl;
-                        link.download = '生日賀卡_QR碼.png';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-                });
-                
-                // 關閉對話框按鈕
-                document.getElementById('close-dialog-btn').addEventListener('click', function() {
-                    document.body.removeChild(dialogOverlay);
-                });
-                
-                // 點擊背景關閉對話框
-                dialogOverlay.addEventListener('click', function(e) {
-                    if (e.target === dialogOverlay) {
-                        document.body.removeChild(dialogOverlay);
+                    // 先保存卡片數據
+                    const cardId = await saveCardToServer();
+                    if (!cardId) {
+                        throw new Error('保存卡片失敗');
                     }
-                });
+
+                    const shareUrl = `${viewUrl}&card=${cardId}`;
+                    
+                    dialog.innerHTML = `
+                        <h3 style="margin: 0 0 20px 0; color: #5e35b1; font-size: 1.5rem; text-align: center;">分享你的生日賀卡</h3>
+                        <p style="margin-bottom: 15px;">複製以下連結或生成 QR 碼來分享你的賀卡：</p>
+                        <div style="display: flex; margin-bottom: 20px;">
+                            <input type="text" id="share-url" value="${shareUrl}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-right: 10px;" readonly>
+                            <button id="copy-url-btn" style="padding: 10px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">複製</button>
+                        </div>
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <button id="generate-qr-btn" style="padding: 10px 20px; background: #5e35b1; color: white; border: none; border-radius: 5px; cursor: pointer;">生成 QR 碼</button>
+                        </div>
+                        <div id="qrcode-container" style="text-align: center; margin: 20px 0; display: none;"></div>
+                        <div style="text-align: center;">
+                            <button id="close-dialog-btn" style="padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 5px; cursor: pointer;">關閉</button>
+                        </div>
+                    `;
+
+                    dialogOverlay.appendChild(dialog);
+                    document.body.appendChild(dialogOverlay);
+
+                    // 複製連結功能
+                    const copyBtn = document.getElementById('copy-url-btn');
+                    const urlInput = document.getElementById('share-url');
+                    
+                    copyBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        urlInput.select();
+                        document.execCommand('copy');
+                        
+                        this.textContent = '已複製!';
+                        setTimeout(() => {
+                            this.textContent = '複製';
+                        }, 2000);
+                    });
+
+                    // 生成 QR 碼功能
+                    document.getElementById('generate-qr-btn').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const qrcodeContainer = document.getElementById('qrcode-container');
+                        qrcodeContainer.style.display = 'block';
+                        
+                        const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${encodeURIComponent(shareUrl)}&chs=250x250&choe=UTF-8`;
+                        qrcodeContainer.innerHTML = `
+                            <img src="${qrCodeUrl}" alt="QR Code">
+                            <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">用手機掃描此 QR 碼即可查看</p>
+                            <button id="download-qr-btn" style="margin-top: 10px; padding: 8px 15px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer;">下載 QR 碼</button>
+                        `;
+                        
+                        document.getElementById('download-qr-btn').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const link = document.createElement('a');
+                            link.href = qrCodeUrl;
+                            link.download = '生日賀卡_QR碼.png';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        });
+                    });
+
+                    // 關閉對話框功能
+                    document.getElementById('close-dialog-btn').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.body.removeChild(dialogOverlay);
+                    });
+
+                    dialogOverlay.addEventListener('click', function(e) {
+                        if (e.target === dialogOverlay) {
+                            document.body.removeChild(dialogOverlay);
+                        }
+                    });
+                } catch (error) {
+                    console.error('顯示分享對話框失敗:', error);
+                    alert('分享失敗，請稍後重試！');
+                }
             }
 
-            // 在 DOMContentLoaded 結尾呼叫
-            initHearts();
+            // 添加保存卡片到服務器的功能
+            async function saveCardToServer() {
+                try {
+                    const cardData = {
+                        title: document.querySelector('[data-type="title"]')?.innerHTML || "",
+                        subtitle: document.querySelector('[data-type="subtitle"]')?.innerHTML || "",
+                        backTitle: document.querySelector('[data-type="back-title"]')?.innerHTML || "",
+                        message: document.querySelector('[data-type="message"]')?.innerHTML || "",
+                        travelTitle: document.querySelector('[data-type="travel-title"]')?.innerHTML || "",
+                        travelContent: document.querySelector('[data-type="travel-content"]')?.innerHTML || "",
+                        movieTitle: document.querySelector('[data-type="movie-title"]')?.innerHTML || "",
+                        movieContent: document.querySelector('[data-type="movie-content"]')?.innerHTML || "",
+                        foodTitle: document.querySelector('[data-type="food-title"]')?.innerHTML || "",
+                        foodContent: document.querySelector('[data-type="food-content"]')?.innerHTML || "",
+                        exhibitionTitle: document.querySelector('[data-type="exhibition-title"]')?.innerHTML || "",
+                        exhibitionContent: document.querySelector('[data-type="exhibition-content"]')?.innerHTML || "",
+                        photos: []
+                    };
+
+                    // 收集所有照片數據
+                    document.querySelectorAll('.photo-frame').forEach(frame => {
+                        const photoData = {
+                            id: frame.getAttribute('data-id')
+                        };
+                        const realPhoto = frame.querySelector('.photo-real');
+                        const placeholderPhoto = frame.querySelector('.photo-placeholder');
+                        const photoCaption = frame.querySelector('.photo-caption');
+
+                        if (realPhoto) {
+                            photoData.type = 'real';
+                            photoData.src = realPhoto.src;
+                        } else if (placeholderPhoto) {
+                            photoData.type = 'placeholder';
+                            photoData.title = placeholderPhoto.querySelector('p')?.textContent || "";
+                            photoData.background = placeholderPhoto.style.background || "";
+                        }
+                        if (photoCaption) {
+                            photoData.caption = photoCaption.innerHTML;
+                        }
+                        cardData.photos.push(photoData);
+                    });
+
+                    const response = await fetch('http://localhost:5000/api/save_card', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(cardData)
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showSaveStatus('saved');
+                        return result.card_id;
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error('保存失敗:', error);
+                    alert('保存失敗，請稍後重試！');
+                    return null;
+                }
+            }
+
+            // 修改檢視模式載入邏輯
+            async function loadCardFromServer(cardId) {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/load_card/${cardId}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        return result.data;
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error('載入失敗:', error);
+                    alert('載入失敗，請確認連結是否正確！');
+                    return null;
+                }
+            }
+
+            // 在程式最後，如果有卡片資料就載入
+            loadCardData();
         });
     </script>
 </body>

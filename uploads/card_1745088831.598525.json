@@ -1,0 +1,37 @@
+{
+  "title": "Verna Lin",
+  "subtitle": "生日快樂",
+  "backTitle": "親愛的 Verna",
+  "message": "\n                    生日快樂！<br>\n                    我們相處即將滿兩年了，<br>\n                    這段時間有你的陪伴真的很幸福。<br>\n                    一起去過香港、韓國、沖繩，<br>\n                    一起打工、逛展覽、看電影、品嚐美食，<br>\n                    每一刻都是珍貴的回憶。<br>\n                    希望未來的日子裡，<br>\n                    我們能創造更多美好的回憶。<br>\n                    我愛你！\n                ",
+  "travelTitle": "旅行回憶",
+  "travelContent": "一起去過香港、韓國、沖繩，每次旅行都充滿了歡笑和美好的回憶。",
+  "movieTitle": "電影時光",
+  "movieContent": "一起看過許多電影，分享彼此的想法和感受，這些都是我們共同的回憶。",
+  "foodTitle": "美食探索",
+  "foodContent": "一起品嚐各種美食，發現新的口味和喜好，每一餐都是一次小小的冒險。",
+  "exhibitionTitle": "展覽漫步",
+  "exhibitionContent": "一起逛過許多展覽，分享對藝術和文化的熱愛，豐富了我們的精神世界。",
+  "photos": [
+    {
+      "id": "1",
+      "type": "placeholder",
+      "title": "香港之旅",
+      "background": "",
+      "caption": "香港之旅 - 2022年"
+    },
+    {
+      "id": "2",
+      "type": "placeholder",
+      "title": "韓國之旅",
+      "background": "",
+      "caption": "韓國之旅 - 2022年"
+    },
+    {
+      "id": "3",
+      "type": "placeholder",
+      "title": "沖繩之旅",
+      "background": "",
+      "caption": "沖繩之旅 - 2023年"
+    }
+  ]
+}
